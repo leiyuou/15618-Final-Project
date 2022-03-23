@@ -53,8 +53,6 @@ Algorithm 1 Dijkstra(Graph, source)
 18: return dist[], prev[]
 ```
 
-![code](./pics/code.jpg)
-
 
 The compute-intensive part is the while loop from lines 7 to 17.
 Although the inherent dependency of the algorithm limits the amount of
