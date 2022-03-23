@@ -1,13 +1,10 @@
-::: titlepage
-::: center
-15-418/618 Final Project
+# 15-418/618 Final Project
 
-Parallel Dijkstra's Shortest Path Algorithm
+## Parallel Dijkstra's Shortest Path Algorithm
 
 Xinqi Wang (Andrew ID xinqiw)\
 Yuou Lei (Andrew ID yuoul)
-:::
-:::
+
 
 # SUMMARY
 
@@ -34,14 +31,30 @@ many other real-world applications such as network routing, path
 planning, etc. The Dijkstra's algorithm is a type of greedy algorithm
 and its pseudocode\[1\] is as follows:
 
-::: algorithm
-::: algorithmic
-dist\[$v$\] ← INFINITY prev\[$v$\] ← UNDEFINED add $v$ to Q
-dist\[source\] ← 0 $u$ ← vertex in Q with min dist\[$u$\] remove $u$
-from Q $alt$ ← dist\[$u$\] + Graph.Edges($u$, $v$) dist\[$v$\] ← $alt$
-prev\[$v$\] ← $u$ return dist\[\], prev\[\]
-:::
-:::
+```
+Algorithm 1 Dijkstra(Graph, source)
+1: for vertex v in Graph.V ertices do
+2:   dist[v] ← INFINITY
+3:   prev[v] ← UNDEFINED
+4:   add v to Q
+5: end for
+6: dist[source] ← 0
+7: while Q is not empty do
+8:   u ← vertex in Q with min dist[u]
+9:   remove u from Q
+10:  for neighbor v of u still in Q do
+11:      alt ← dist[u] + Graph.Edges(u, v)
+12:      if alt < dist[v] then
+13:         dist[v] ← alt
+14:         prev[v] ← u
+15:      end if
+16:   end for
+17: end while
+18: return dist[], prev[]
+```
+
+![code](./pics/code.jpg)
+
 
 The compute-intensive part is the while loop from lines 7 to 17.
 Although the inherent dependency of the algorithm limits the amount of
@@ -145,26 +158,16 @@ OpenMP (and OpenMPI if we do get to 125% of our goals) as the parallel
 framework.
 
 # SCHEDULE
+| Week starting on | asks and Due Dates |
+| :----: | :----: |
+| 3/21 | Project proposa |
+| 3/28 | Complete Sequential version of Dijkstra's Algorithm<br> Parallelism ideas and start implementation<br> **Proposal due 3/23** |
+| 4/4 | Complete Parallelized version of Dijkstra's Algorithm <br>Performance analysis and draft Milestone report |
+| 4/11 | Complete multi-core CPU version of Dijkstra's Algorithm<br>Performance analysis<br><b>Milestone Report due 4/11</b>|
+| 4/18 |  Progress check (catch up with the timeline if falling behind)<br>CUDA version of Dijkstra's Algorithm |
+| 4/25 | Final report and Presentation<br>**Final Report due 4/29** |
+| 5/2 | **Project Presentation on 5/5** |
 
-::: center
-   Week starting on                      Tasks and **Due Dates**
-  ------------------ ---------------------------------------------------------------
-         3/21                               Project proposal
-                                          **Proposal due 3/23**
-         3/28              Complete Sequential version of Dijkstra's Algorithm
-                               Parallelism ideas and start implementation
-         4/4              Complete Parallelized version of Dijkstra's Algorithm
-                             Performance analysis and draft Milestone report
-         4/11            Complete multi-core CPU version of Dijkstra's Algorithm
-                                          Performance analysis
-                                      **Milestone Report due 4/11**
-         4/18         Progress check (catch up with the timeline if falling behind)
-                                  CUDA version of Dijkstra's Algorithm
-                                          Performance analysis
-         4/25                         Final report and Presentation
-                                        **Final Report due 4/29**
-         5/2                         **Project Presentation on 5/5**
-:::
 
 # REFERENCES
 
