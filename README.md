@@ -1,5 +1,3 @@
-# 15618-Final-Project
-This is the final project of 15618
 ::: titlepage
 ::: center
 15-418/618 Final Project
