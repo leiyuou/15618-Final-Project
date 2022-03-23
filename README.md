@@ -72,12 +72,12 @@ One inherent dependency in Dijkstra's Algorithm is the fact that each
 update to the shortest paths from each vertices to the source node must
 be made based on the addition/introduction of the node from previous
 iteration. Given the fact that Dijkstra's Algorithm is a greedy
-algorithm, the $while$ loop must be executed sequentially to find the
+algorithm, the *while* loop must be executed sequentially to find the
 optimal solution and would be a potential bottleneck. Depending on the
-way of representing the graph $G$ (adjacency list or adjacency matrix)
+way of representing the graph *G* (adjacency list or adjacency matrix)
 and different graphs, the cost and pattern of memory accesses can vary
 significantly. Since we want to focus on parallelizing updates to all
-valid nodes for each iteration of the $while$ loop, the communication
+valid nodes for each iteration of the *while* loop, the communication
 required between cores should be minimized as the updates can be done
 independently.
 
@@ -103,28 +103,28 @@ want to evaluate final implementations with higher core counts.
 
 -   **75%**
 
-    1.  Implement sequential version of Dijkstra's algorithm
+    1.  Implement sequential version of Dijkstra's algorithm.
 
     2.  Implement the parallelized version of Dijkstra's algorithm with
-        OpenMP
+        OpenMP.
 
     3.  Analyze the performance of both versions and speedups (1
-        processor to $n$ processors) on GHC/PSC machines and identify
-        any bottlenecks
+        processor to *n* processors) on GHC/PSC machines and identify
+        any bottlenecks.
 
 -   **100%**
 
-    1.  Implement the algorithm to run on multi-core CPU platforms
+    1.  Implement the algorithm to run on multi-core CPU platforms.
 
     2.  Analyze the performance of the sequential version, parallelized
         GPU version, and multi-core CPU version by comparing speedups,
         identifying bottlenecks, and bench-marking performance
-        characteristics of each implementation on different graph types
+        characteristics of each implementation on different graph types.
 
     3.  Observe on which graph types (e.g. dense and sparse graphs,
         larger and smaller graphs) and with what core counts (if
         applicable) each version of the algorithm perform well and
-        poorly
+        poorly.
 
 -   **125%**
 
@@ -134,7 +134,7 @@ want to evaluate final implementations with higher core counts.
 
     2.  Compare the performance characteristics of the shared-address
         model and message-passing model to see if and how graph types
-        and task granularity could affect the overall performance
+        and task granularity could affect the overall performance.
 
 ## Deliverables
 
