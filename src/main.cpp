@@ -17,7 +17,7 @@
 /**
  * Dijkstra's Algorithms
  */ 
-void Dijkstra(std::list<adjPair> *graph, int source, int n_nodes, int *dist, int *prev)
+void Dijkstra(std::vector<adjPair> *graph, int source, int n_nodes, int *dist, int *prev)
 {
     printf("Computing using Dijkstra's Algorithm ...\n");
 
@@ -28,61 +28,86 @@ void Dijkstra(std::list<adjPair> *graph, int source, int n_nodes, int *dist, int
             dist[i] = 0;
             pq.push({i, 0});
         }
-            
         else
             dist[i] = 1000*n_nodes;
     }
 
-    std::list<distPair>::iterator it;
-    while(!pq.empty()){
-        distPair p = pq.top(); 
-        int u = p.first;
-        pq.pop();
+    std::vector<distPair>::iterator it;
+    distPair p;
+    int u, v, alt, size, id, num;
+    std::vector<distPair> new_pairs;
 
-        for(it=graph[u].begin();it!=graph[u].end();it++){
-            int v = it->first;
-            int alt = dist[u] + it->second;
-
-            // printf("u=%d v=%d alt=%d+%d=%d dist[v]=%d\n", 
-                    // u, v, dist[u], it->second, alt, dist[v]);
-            if (alt<dist[v]){
-                dist[v] = alt;
-                prev[v] = u;
-                pq.push({v, alt});
+    # pragma omp parallel private (num, p, v, alt, new_pairs, id) shared (size, pq, u, graph, dist)
+    {
+        id = omp_get_thread_num();
+        num = omp_get_num_threads();
+        for(int n=0; n<n_nodes; n++){
+            // printf("----%d----%d----\n", id, n);
+            #pragma omp single
+            {
+                p = pq.top(); 
+                u = p.first;
+                pq.pop();
+                size = graph[u].size();
             }
+            #pragma omp barrier
+            
+            // # pragma omp parallel
+            for(int i=id; i<size ; i+=num){
+                // int i = ind + id;
+                v = graph[u][i].first;
+                alt = dist[u] + graph[u][i].second;
+                // printf("%d u=%d v=%d alt=%d+%d=%d dist[v]=%d\n", 
+                //         id, u, v, dist[u], graph[u][i].second, alt, dist[v]);
+                if (alt<dist[v]){
+                    dist[v] = alt;
+                    prev[v] = u;
+                    new_pairs.push_back({v,alt});
+                }
+            }
+            #pragma omp critical
+            {
+                it = new_pairs.begin();
+                while (it != new_pairs.end())
+                {
+                    // printf("%d added (%d, %d)\n", id, it->first, it->second);
+                    pq.push(*it);
+                    it = new_pairs.erase(it);
+                }            
+            }
+            #pragma omp barrier
         }
     }
-
 }
 
 /**
  * Bellman Ford Algorithm
  */
-void BellmanFord(std::list<adjPair> *graph, int source, int n_nodes, int *dist, int *prev){
+void BellmanFord(std::vector<adjPair> *graph, int source, int n_nodes, int *dist, int *prev){
     printf("Computing using Bellman Ford's Algorithm ...\n");
 
-    for(int i=0; i<n_nodes;i++){
-        if(i==source)
-            dist[i] = 0;
-        else
-            dist[i] = 1000*n_nodes;
-    }
+    // for(int i=0; i<n_nodes;i++){
+    //     if(i==source)
+    //         dist[i] = 0;
+    //     else
+    //         dist[i] = 1000*n_nodes;
+    // }
 
-    std::list<distPair>::iterator it;
-    for (int i=0; i<n_nodes; i++){
-        for (int u=0; u<n_nodes; u++){
+    // std::list<distPair>::iterator it;
+    // for (int i=0; i<n_nodes; i++){
+    //     for (int u=0; u<n_nodes; u++){
 
-            for(it=graph[u].begin();it!=graph[u].end();it++){
-                int v = it->first;
-                int alt = dist[u] + it->second;
+    //         for(it=graph[u].begin();it!=graph[u].end();it++){
+    //             int v = it->first;
+    //             int alt = dist[u] + it->second;
 
-                if (dist[u]!=1000*n_nodes && alt<dist[v]){
-                    dist[v] = alt;
-                    prev[v] = u;
-                }
-            }
-        }
-    }
+    //             if (dist[u]!=1000*n_nodes && alt<dist[v]){
+    //                 dist[v] = alt;
+    //                 prev[v] = u;
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 /**
@@ -98,7 +123,7 @@ int main(int argc, char *argv[])
     double init_time = 0;
 
     char *inputPath = NULL;
-    char algorithm = 'b';
+    char algorithm = 'd';
     int num_threads=1;
     int source=0;
     int end = -1;
@@ -138,6 +163,8 @@ int main(int argc, char *argv[])
     // printf("Algorithm to be used: %c\n", algorithm);
     printf("Source node: %d\n", source);
 
+    omp_set_num_threads(num_threads);
+
     /* DONE Read input */
     printf("Reading input %s...\n", inputPath);
     FILE *input = fopen(inputPath, "r");
@@ -149,7 +176,7 @@ int main(int argc, char *argv[])
 
     int n_nodes, n_edges;
     fscanf(input, "%d\t%d\n", &n_nodes, &n_edges);
-    std::list<adjPair> *graph = new std::list<adjPair>[n_nodes];
+    std::vector<adjPair> *graph = new std::vector<adjPair>[n_nodes];
     
     int u, v, w;
     for(int i=0; i<n_edges; i++){
