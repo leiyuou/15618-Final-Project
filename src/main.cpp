@@ -313,7 +313,7 @@ int main(int argc, char *argv[])
     double compute_time = 0;
 
     if(algorithm=='d')
-        Dijkstra_pq(graph, source, n_nodes, dist, prev, num_threads);
+        Dijkstra(graph, source, n_nodes, dist, prev, num_threads);
     else
         BellmanFord(graph, source, n_nodes, dist, prev);
     
@@ -332,7 +332,7 @@ int main(int argc, char *argv[])
     }
 
     char outputname[64];
-    sprintf (outputname, "../outputs/output_%s_%d.txt", pt, num_threads);
+    sprintf (outputname, "./outputs/output_%s_%d.txt", pt, num_threads);
     
     FILE *output = fopen(outputname, "w");
     if (!output) {

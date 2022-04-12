@@ -156,7 +156,7 @@ OpenMP (and OpenMPI if we do get to 125% of our goals) as the parallel
 framework.
 
 # SCHEDULE
-| Week starting on | asks and Due Dates |
+| Week starting on | Tasks and Due Dates |
 | :----: | :----: |
 | 3/21 | Project proposa |
 | 3/28 | Complete Sequential version of Dijkstra's Algorithm<br> Parallelism ideas and start implementation<br> **Proposal due 3/23** |
@@ -166,6 +166,39 @@ framework.
 | 4/25 | Final report and Presentation<br>**Final Report due 4/29** |
 | 5/2 | **Project Presentation on 5/5** |
 
+# MILESTONE
+## SUMMARY
+By the end of milestone, we finished implementing the sequential version of Dijkstra's algorithm, the sequential version of Bellman Ford and the parallelized versions using OpenMP of the Dijkstra's algorithm. For Dijkstra's algorithm, each iteration adds a new vertex into the visited set which is marked as the one who gets the shortest path. Hence, it is impossible to perform iterations in parallel. However, based on the idea of assignment 3, we can perform the computation of each nodes inside each iteration in parallel. That is, we assigned several nodes to each thread, and all the threads can access some global variables like global min, global node, visited array, and graph array. Then, all the threads work together to get the "shortest node" of this iteration. We also incorporated a priority queue structure in one version of the parallelized Dijkstra's algorithm and compared the performance to one without a priority queue.
+Inspired by the feedback on our proposal, we also implemented the Bellman Ford Algorithm, which is also a classic algorithm for finding shortest paths from a source to other nodes in a graph. Our sequential version functions correctly and we're currently still working on the parallelized implementation using OpenMP.
+For the dataset, we used the data from Stanford Large Network Dataset Collection \cite{snapnets}. The data set does not contain weight of each edge, hence, we implemented a Java program to randomly generate weight for each edge.
+
+## GOALS
+So far, we are on track of our proposed schedule. However, our performance analysis show that the amount of speedup from our current approach is limited by the inherent dependencies of the algorithm. According to the feedback of proposal and our current results, we decided to modify our goals to include a new shortest path algorithm, the Bellman Ford Algorithm, in place of the original multi-core cpu implementation of the algorithm because we want to focus more on the GPU acceleration of shortest path algorithms. If time permits, we also want to look into some of the architectures suggested in our mentor's feedback, such as the Swarm Architectures that are useful for parallelizing hard-to-parallelize applications such ah Dijkstra's algorithm.
+
+## DELIVERABLE
+We plan to use graphs and charts to show our work in the poster session. Specifically, we intend to have an analysis chart to show the computation time and speedup of each parallel algorithm. Then, we can generate a "path graph" since we are working on "path finding" work.
+
+## PRELIMINARY RESULTS
+To measure the performance, we do the analysis of the computation time of different algorithms under different numbers of threads. The result shows that the openMP works pretty well on thread 4 when the data-set is big enough.
+![](pics/milestone_result.jpg)
+
+## UPDATED TIMELINE AS OF 4/11/22
+| Week starting on | Tasks and Due Dates |
+| :----: | :----: |
+| 3/21 | Project proposa<br> **Proposal due 3/23** |
+| 3/28 | Complete Sequential version of Dijkstra's Algorithm<br> Parallelism ideas and start implementation|
+| 4/4 | Complete Parallelized version of Dijkstra's Algorithm <br>Performance analysis and draft Milestone report |
+| 4/12 | Debug and Complete parallelized Bellman Ford Algorithm (Xinqi)|
+| 4/14 | Performance analysis of all implementations on larger dataset and more capable machines (Yuou)|
+| 4/16 | Implement message-passing versions of both algorithms (both)|
+| 4/19 | Performance analysis of OpenMPI implementations (Yuou)<br>Compare results with OpenMP implementations (Xinqi)|
+| 4/22 | If on track of schedule, look into Swarm Architecture|
+| 4/25 | Organize current results and discussions of analyses (both)<br>Start working on final report and presentation (both)<br>**Final Report due 4/29**|
+| 5/2 | **Project Presentation on 5/5**|
+
+## ISSUES
+Currently, our Bellman Ford Algorithm does not work very well, and we are working on figure out and fix the problem.
+Besides, we need to double-check that whether we can test our algorithms on PSC.
 
 # REFERENCES
 

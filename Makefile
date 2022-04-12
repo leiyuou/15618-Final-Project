@@ -1,6 +1,6 @@
 APP_NAME=main
 
-OBJS=main.o
+OBJS=src/main.o
 
 CXX = g++ -m64 -std=c++11
 CXXFLAGS = -I. -O3 -Wall -fopenmp -Wno-unknown-pragmas
