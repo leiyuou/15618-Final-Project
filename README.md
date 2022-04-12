@@ -168,8 +168,8 @@ framework.
 
 # MILESTONE
 ## SUMMARY
-By the end of milestone, we finished implementing the sequential version of Dijkstra's algorithm, the sequential version of Bellman Ford and the parallelized versions using OpenMP of the Dijkstra's algorithm. For Dijkstra's algorithm, each iteration adds a new vertex into the visited set which is marked as the one who gets the shortest path. Hence, it is impossible to perform iterations in parallel. However, based on the idea of assignment 3, we can perform the computation of each nodes inside each iteration in parallel. That is, we assigned several nodes to each thread, and all the threads can access some global variables like global min, global node, visited array, and graph array. Then, all the threads work together to get the "shortest node" of this iteration. We also incorporated a priority queue structure in one version of the parallelized Dijkstra's algorithm and compared the performance to one without a priority queue.
-Inspired by the feedback on our proposal, we also implemented the Bellman Ford Algorithm, which is also a classic algorithm for finding shortest paths from a source to other nodes in a graph. Our sequential version functions correctly and we're currently still working on the parallelized implementation using OpenMP.
+By the end of milestone, we finished implementing the sequential version of Dijkstra's algorithm, the sequential version of Bellman Ford and the parallelized versions using OpenMP of the Dijkstra's algorithm. For Dijkstra's algorithm, each iteration adds a new vertex into the visited set which is marked as the one who gets the shortest path. Hence, it is impossible to perform iterations in parallel. However, based on the idea of assignment 3, we can perform the computation of each nodes inside each iteration in parallel. That is, we assigned several nodes to each thread, and all the threads can access some global variables like global min, global node, visited array, and graph array. Then, all the threads work together to get the "shortest node" of this iteration. We also incorporated a priority queue structure in one version of the parallelized Dijkstra's algorithm and compared the performance to one without a priority queue.<br>
+Inspired by the feedback on our proposal, we also implemented the Bellman Ford Algorithm, which is also a classic algorithm for finding shortest paths from a source to other nodes in a graph. Our sequential version functions correctly and we're currently still working on the parallelized implementation using OpenMP.<br>
 For the dataset, we used the data from Stanford Large Network Dataset Collection \cite{snapnets}. The data set does not contain weight of each edge, hence, we implemented a Java program to randomly generate weight for each edge.
 
 ## GOALS
@@ -197,7 +197,7 @@ To measure the performance, we do the analysis of the computation time of differ
 | 5/2 | **Project Presentation on 5/5**|
 
 ## ISSUES
-Currently, our Bellman Ford Algorithm does not work very well, and we are working on figure out and fix the problem.
+Currently, our Bellman Ford Algorithm does not work very well, and we are working on figure out and fix the problem.<br>
 Besides, we need to double-check that whether we can test our algorithms on PSC.
 
 # REFERENCES
