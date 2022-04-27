@@ -275,49 +275,59 @@ int main(int argc, char *argv[])
     }
 
     if (mpi){
-        int procID;
-        int nproc;
-        MPI_Comm_rank(MPI_COMM_WORLD, &procID);
-        MPI_Comm_size(MPI_COMM_WORLD, &nproc);
-
-        MPI_Init(NULL,NULL);
-
-        /* DONE Read input */
-        int n_nodes, n_edges;
-        int *graph;
-        prevPair *dist_prev; 
-        
-        if(procID==0){
-            graph = readInput_MPI(inputPath, &n_nodes, &n_edges);
-            init_time += duration_cast<dsec>(Clock::now() - init_start).count();
-            printf("Initialization Time: %lf.\n", init_time);
-            dist_prev = (prevPair*)malloc(sizeof(prevPair) * n_nodes);
-        }
-
-        /* DONE Compute */
-        // printf("Computing using %c...\n", algorithm);
-        auto compute_start = Clock::now();
-        double compute_time = 0;
-
-        BellmanFord_MPI(procID, nproc, graph, source, n_nodes, dist_prev);
-
-        compute_time += duration_cast<dsec>(Clock::now() - compute_start).count();
-        printf("***Computation Time: %lf.\n", compute_time);
-
-        /* DONE Write output */
-        if (procID==0){
+        if (algorithm == 'd') {
+            int n_nodes, n_edges;
             int *dist = (int *)malloc(sizeof(int) * n_nodes);
             int *prev = (int *)malloc(sizeof(int) * n_nodes);
-            for(int i=0; i<n_nodes; i++){
-                dist[i] = dist_prev[i].dist;
-                prev[i] = dist_prev[i].prev;
-            }
-            free(dist_prev);
-            writeOutput(inputPath, n_nodes, n_edges, dist, prev, num_threads, algorithm, source, end, mpi); 
-        }
+            int **graph = readInput(inputPath, &n_nodes, &n_edges);
+            Dijkstra_MPI(graph, source, n_nodes, dist, prev, num_threads);
+            writeOutput(inputPath, n_nodes, n_edges, dist, prev, num_threads, algorithm, source, end, mpi);       
 
-        /* DONE Cleanup */
-        MPI_Finalize();
+        } else {
+            int procID;
+            int nproc;
+            MPI_Comm_rank(MPI_COMM_WORLD, &procID);
+            MPI_Comm_size(MPI_COMM_WORLD, &nproc);
+
+            MPI_Init(NULL,NULL);
+
+            /* DONE Read input */
+            int n_nodes, n_edges;
+            int *graph;
+            prevPair *dist_prev; 
+            
+            if(procID==0){
+                graph = readInput_MPI(inputPath, &n_nodes, &n_edges);
+                init_time += duration_cast<dsec>(Clock::now() - init_start).count();
+                printf("Initialization Time: %lf.\n", init_time);
+                dist_prev = (prevPair*)malloc(sizeof(prevPair) * n_nodes);
+            }
+
+            /* DONE Compute */
+            // printf("Computing using %c...\n", algorithm);
+            auto compute_start = Clock::now();
+            double compute_time = 0;
+
+            BellmanFord_MPI(procID, nproc, graph, source, n_nodes, dist_prev);
+
+            compute_time += duration_cast<dsec>(Clock::now() - compute_start).count();
+            printf("***Computation Time: %lf.\n", compute_time);
+
+            /* DONE Write output */
+            if (procID==0){
+                int *dist = (int *)malloc(sizeof(int) * n_nodes);
+                int *prev = (int *)malloc(sizeof(int) * n_nodes);
+                for(int i=0; i<n_nodes; i++){
+                    dist[i] = dist_prev[i].dist;
+                    prev[i] = dist_prev[i].prev;
+                }
+                free(dist_prev);
+                writeOutput(inputPath, n_nodes, n_edges, dist, prev, num_threads, algorithm, source, end, mpi); 
+            }
+
+            /* DONE Cleanup */
+            MPI_Finalize();
+        }
     }
     else {
         printf("Number of threads: %d\n", num_threads);

@@ -155,6 +155,89 @@ void Dijkstra(int** graph, int source, int n_nodes, int *dist, int *prev, int nu
     free(visited);
 }
 
+void Dijkstra_MPI_core(int** graph, int source, int n_nodes, int *dist,
+ int *prev, int procID, int nproc, int *global_min) {
+
+    int span = (n_nodes + nproc - 1) / nproc;
+    int startIndex = procID * span;
+    int endIndex = min(n_nodes, startIndex + span);
+    std::vector<distPair>::iterator it;
+    std::vector<distPair> new_pairs;
+    int visited[n_nodes];
+    
+    int local_min[2];
+    
+    for (int n = 0; n < n_nodes; n++) {
+        int local_min_dist = 1000*n_nodes;
+        int local_min_node = 0;
+        for(int i=startIndex; i<endIndex ; i++){
+            if (visited[i] == 1) continue;
+            if (dist[i] < local_min_dist)
+            {
+                local_min_dist = dist[i];
+                local_min_node = i;
+            }
+        }
+        local_min[0] = local_min_dist;
+        local_min[1] = local_min_node;
+
+        MPI_Allreduce(local_min, global_min, 1, MPI_2INT, MPI_MINLOC, MPI_COMM_WORLD);
+        visited[global_min[1]] = 1;
+        dist[global_min[1]] = global_min[0];
+        for(int i=startIndex; i<endIndex ; i++){
+            if (visited[i] == 1) continue;
+            int alt = dist[global_min[1]] + graph[global_min[1]][i];
+            // printf("%d u=%d v=%d alt=%d+%d=%d dist[v]=%d\n",
+            //        id, u, v, dist[u], graph[u][v], alt, dist[v]);
+            if (alt < dist[i])
+            {
+                dist[i] = alt;
+                prev[i] = global_min[1];
+            }
+        }
+    }
+    
+}
+
+void Dijkstra_MPI(int **graph, int source, int n_nodes, int *dist, int *prev, int nproc)
+{
+    double startTime;
+    double endTime;
+    int procID;
+    std::priority_queue<distPair, std::vector<distPair>,compare> pq;
+    for(int i=0; i<n_nodes;i++){
+
+        if(i==source){
+            dist[i] = 0;
+            pq.push({i, 0});
+        }
+
+        else
+            dist[i] = 1000*n_nodes;
+    }
+    MPI_Comm_rank(MPI_COMM_WORLD, &procID);
+
+    // Get total number of processes specificed at start of run
+    MPI_Comm_size(MPI_COMM_WORLD, &nproc);
+
+    MPI_Init(NULL, NULL);
+
+    // Run computation
+    distPair minPair = pq.top();
+    int global_min[2];
+    global_min[0] = minPair.second;
+    global_min[1] = minPair.first;
+    startTime = MPI_Wtime();
+    Dijkstra_MPI_core(graph, source, n_nodes, dist, prev, procID, nproc, global_min);
+    endTime = MPI_Wtime();
+
+    // Cleanup
+    MPI_Finalize();
+    
+    printf("Elapsed time for proc %d: %f\n", procID, endTime - startTime);
+
+}
+
 /**
  * Bellman Ford Algorithm
  */
