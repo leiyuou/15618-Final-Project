@@ -70,7 +70,7 @@ void Dijkstra_seq(int **graph, int source, int n_nodes, int *dist, int *prev);
  * Dijkstra's Algo with MPI
  * 
  */
-void Dijkstra_MPI(int **graph, int source, int n_nodes, int *dist, int *prev, int nproc, char *inputPath, int n_edges, int end);
+void Dijkstra_MPI(int source, int nproc, char *inputPath, int end);
 
 /**
  * Sequential Bellman Ford Algorithm
