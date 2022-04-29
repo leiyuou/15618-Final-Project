@@ -84,50 +84,6 @@ int *readInput_MPI(char *inputPath, int* n_nodes, int *n_edges)
     return graph;
 }
 
-void writeOutput(char *inputPath, int n_nodes, int n_edges, int *dist, int *prev, 
-                int num_threads, char algorithm, int source, int end, bool mpi)
-{
-    printf("Writing output...\n");
-    char *inputname = (char*)malloc(sizeof(char)*strlen(inputPath));
-    strcpy(inputname, inputPath);
-    char *pt;
-    pt = strtok(inputname, "../");
-    for(int i=0; i<1; i++){
-        pt = strtok(NULL, "/.");
-    }
-
-    char outputname[64];
-    if(mpi)
-        sprintf(outputname, "../outputs/mpi_%s_%d_%c.txt", pt, num_threads, algorithm);
-    else
-        sprintf(outputname, "../outputs/openmp_%s_%d_%c.txt", pt, num_threads, algorithm);
-
-    FILE *output = fopen(outputname, "w");
-    if (!output) {
-        printf("Unable to open file: %s.\n", outputname);
-        return;
-    }
-
-    fprintf(output, "%d\t%d\n", n_nodes, n_edges);
-    fprintf(output, "Node\tDis\tPrev\n");
-    for(int n=0; n<n_nodes; n++){
-        // printf("%d\t%d\t%d\n", n, dist[n], prev[n]);
-        fprintf(output, "%d\t%d\t%d\n", n, dist[n], prev[n]);  
-    }
-    fclose(output);
-
-    /* TODO outpur shortest path if end node is specified */
-    if(end>=0){
-        int p = end;
-        printf("%d",p);
-        while(p!=source){
-            p = prev[p];
-            printf("->%d", p);
-        }
-        printf("\n");
-    }
-}
-
 
 void minPair (void *inB, void *inoutB, int *len, MPI_Datatype *dptr)
 {
@@ -239,7 +195,7 @@ int main(int argc, char *argv[])
     bool mpi = false;
     
     do {
-        opt = getopt(argc, argv, "f:n:s:e:a:q");
+        opt = getopt(argc, argv, "f:n:s:e:a:q:i");
         switch (opt) {
         case 'f':
             inputPath = optarg;
@@ -275,13 +231,13 @@ int main(int argc, char *argv[])
     }
 
     if (mpi){
+        printf("asdasdasdasdasd\n");
         if (algorithm == 'd') {
             int n_nodes, n_edges;
             int *dist = (int *)malloc(sizeof(int) * n_nodes);
             int *prev = (int *)malloc(sizeof(int) * n_nodes);
             int **graph = readInput(inputPath, &n_nodes, &n_edges);
-            Dijkstra_MPI(graph, source, n_nodes, dist, prev, num_threads);
-            writeOutput(inputPath, n_nodes, n_edges, dist, prev, num_threads, algorithm, source, end, mpi);       
+            Dijkstra_MPI(graph, source, n_nodes, dist, prev, num_threads, inputPath, n_edges, end);
 
         } else {
             int procID;

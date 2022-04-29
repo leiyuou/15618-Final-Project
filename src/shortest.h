@@ -32,6 +32,9 @@ struct compare
    }  
  }; 
 static inline int min(int x, int y) { return (x < y) ? x : y; }
+
+void writeOutput(char *inputPath, int n_nodes, int n_edges, int *dist, int *prev, 
+                int num_threads, char algorithm, int source, int end, bool mpi);
 /**
  * Dijkstra's Algorithms with Priority Queue
  */ 
@@ -58,7 +61,6 @@ static inline int min(int x, int y) { return (x < y) ? x : y; }
  */
 void Dijkstra_MPI_core(int** graph, int source, int n_nodes, int *dist, int *prev, int procID, int nproc, int *global_min);
 
-void Dijkstra_MPI(int **graph, int source, int n_nodes, int *dist, int *prev, int nproc);
-
+void Dijkstra_MPI(int **graph, int source, int n_nodes, int *dist, int *prev, int nproc, char *inputPath, int n_edges, int end);
 
 #endif
