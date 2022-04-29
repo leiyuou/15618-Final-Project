@@ -128,11 +128,7 @@ int main(int argc, char *argv[])
         if (algorithm == 'd')
         {
             printf("Computing using MPI Dijkstra's Algorithm...\n");
-            int n_nodes, n_edges;
-            int *dist = (int *)malloc(sizeof(int) * n_nodes);
-            int *prev = (int *)malloc(sizeof(int) * n_nodes);
-            int **graph = readInput(inputPath, &n_nodes, &n_edges);
-            Dijkstra_MPI(graph, source, n_nodes, dist, prev, num_threads, inputPath, n_edges, end);
+            Dijkstra_MPI(source, num_threads, inputPath, end);
         }
         else
         {
