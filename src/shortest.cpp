@@ -201,7 +201,7 @@ void Dijkstra_MPI_core(int** graph, int source, int n_nodes, int *dist,
         }
         local_min[0] = local_min_dist;
         local_min[1] = local_min_node;
-
+        
         MPI_Allreduce(local_min, global_min, 1, MPI_2INT, MPI_MINLOC, MPI_COMM_WORLD);
         visited[global_min[1]] = 1;
         dist[global_min[1]] = global_min[0];
@@ -214,16 +214,16 @@ void Dijkstra_MPI_core(int** graph, int source, int n_nodes, int *dist,
             if (alt < dist[i])
             {
                 dist[i] = alt;
-                prev[i-startIndex] = global_min[1];
-                printf("i is %d, prev is %d\n", i, global_min[1]);
+                prev[i - startIndex] = global_min[1];   
             }
         }
     }
     
 }
 
-void Dijkstra_MPI(int **graph, int source, int n_nodes, int *dist, int *prev, int nproc, char *inputPath, int n_edges, int end)
+void Dijkstra_MPI(int source, int nproc, char *inputPath, int end)
 {
+
     double startTime;
     double endTime;
     int procID;
@@ -232,16 +232,18 @@ void Dijkstra_MPI(int **graph, int source, int n_nodes, int *dist, int *prev, in
 
     // Get total number of processes specificed at start of run
     MPI_Comm_size(MPI_COMM_WORLD, &nproc);
+    int n_nodes, n_edges;
+    int *dist = (int *)malloc(sizeof(int) * n_nodes);
+    int *prev = (int *)malloc(sizeof(int) * n_nodes);
+    int **graph = readInput(inputPath, &n_nodes, &n_edges);
     int global_min[2];
     if (procID == 0) {
         for(int i=0; i<n_nodes;i++){
             if(i==source){
                 dist[i] = 0;
-                prev[i] = source;
             }
             else{
                 dist[i] = 1000*n_nodes;
-                prev[i] = -1;
             }
         }
     }
@@ -268,6 +270,9 @@ void Dijkstra_MPI(int **graph, int source, int n_nodes, int *dist, int *prev, in
     // Cleanup
     MPI_Finalize();
     printf("Elapsed time for proc %d: %f\n", procID, endTime - startTime);
+    free(dist);
+    free(prev);
+    free(graph);
 
 }
 
