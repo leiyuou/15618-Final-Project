@@ -16,15 +16,19 @@
 #include <chrono>
 #include <math.h>
 
+
 typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::duration<double> dsec;
-typedef std::pair<int, int> distPair;
+typedef std::pair<int, int> intPair;
 
-typedef struct
+typedef struct 
 {
-  int dist;
-  int prev;
-} prevPair;
+  int n_nodes;
+  int n_edges;
+  int *n_neighbors;
+  int** nodes;
+  int** weights;
+} AdjList;
 
 typedef struct
 {
@@ -38,12 +42,17 @@ typedef struct
   int *weights;
   int n_nodes;
   int n_edges;
-}Graph;
+} Graph;
 
+typedef struct
+{
+  int dist;
+  int prev;
+} prevPair;
 
 struct compare
 {
-  bool operator()(const distPair &d1, const distPair &d2)
+  bool operator()(const intPair &d1, const intPair &d2)
   {
     return d1.second > d2.second;
   }
@@ -54,17 +63,17 @@ static inline int min(int x, int y) { return (x < y) ? x : y; }
 /**
  * Dijkstra's Algorithm with Priority Queue OpenMP
  */ 
-void Dijkstra_pq(int** graph, int source, int n_nodes, int *dist, int *prev, int num_threads);
+void Dijkstra_pq(AdjList *graph, int source, int *dist, int *prev, int num_threads);
 
 /**
  * Dijkstra's Algorithm OpenMP
  */ 
-void Dijkstra(int** graph, int source, int n_nodes, int *dist, int *prev, int num_of_threads);
+void Dijkstra(AdjList *graph, int source, int *dist, int *prev, int num_of_threads);
 
 /**
  * Sequential Dijkstra's Algorithm
  */
-void Dijkstra_seq(int **graph, int source, int n_nodes, int *dist, int *prev);
+void Dijkstra_seq(AdjList *graph, int source, int *dist, int *prev);
 
 /**
  * Dijkstra's Algo with MPI
@@ -94,7 +103,7 @@ void BellmanFord_MPI(Graph *graph, int source, char* inputPath, char algorithm, 
  * Read Input
  *
  */
-int **readInput(char *inputPath, int *n_nodes, int *n_edges);
+AdjList *readInput(char *inputPath);
 
 /**
  * Read Input for Bellman Ford

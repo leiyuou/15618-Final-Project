@@ -77,7 +77,10 @@ int main(int argc, char *argv[])
         if (algorithm == 'd')
         {
             /* DONE Read input */
-            int **graph = readInput(inputPath, &n_nodes, &n_edges);
+            // int **graph = readInput(inputPath, &n_nodes, &n_edges);
+            AdjList *graph = readInput(inputPath);
+            n_nodes = graph->n_nodes;
+            n_edges = graph->n_edges;
 
             // init_time += duration_cast<dsec>(Clock::now() - init_start).count();
             // printf("Initialization Time: %lf.\n", init_time);
@@ -90,7 +93,7 @@ int main(int argc, char *argv[])
             double compute_time = 0;
 
             printf("Computing using Sequential Dijkstra's Algorithm...\n");
-            Dijkstra_seq(graph, source, n_nodes, dist, prev);
+            Dijkstra_seq(graph, source, dist, prev);
 
             compute_time += duration_cast<dsec>(Clock::now() - compute_start).count();
             printf("***Computation Time: %lf.\n", compute_time);
@@ -127,7 +130,6 @@ int main(int argc, char *argv[])
     {
         if (algorithm == 'd')
         {
-            printf("Computing using MPI Dijkstra's Algorithm...\n");
             Dijkstra_MPI(source, num_threads, inputPath, end);
         }
         else
@@ -152,7 +154,10 @@ int main(int argc, char *argv[])
         if (algorithm == 'd')
         {   
             /* DONE Read input */
-            int **graph = readInput(inputPath, &n_nodes, &n_edges);
+            // int **graph = readInput(inputPath, &n_nodes, &n_edges);
+            AdjList *graph = readInput(inputPath);
+            n_nodes = graph->n_nodes;
+            n_edges = graph->n_edges;
             // init_time += duration_cast<dsec>(Clock::now() - init_start).count();
             // printf("Initialization Time: %lf.\n", init_time);
 
@@ -165,11 +170,11 @@ int main(int argc, char *argv[])
 
             if (with_pq){
                 printf("Computing using OpenMP Dijkstra's Algorithm with PQ...\n");
-                Dijkstra_pq(graph, source, n_nodes, dist, prev, num_threads);
+                Dijkstra_pq(graph, source, dist, prev, num_threads);
             }
             else{
                 printf("Computing using OpenMP Dijkstra's Algorithm...\n");
-                Dijkstra(graph, source, n_nodes, dist, prev, num_threads);
+                Dijkstra(graph, source, dist, prev, num_threads);
             }
             
             compute_time += duration_cast<dsec>(Clock::now() - compute_start).count();

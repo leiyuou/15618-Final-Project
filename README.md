@@ -9,9 +9,8 @@ Yuou Lei (Andrew ID yuoul)
 # SUMMARY
 
 In this project, we will parallelize the classic path finding algorithm,
-Dijkstra's Shortest Path Algorithm, on both the GPU and multi-core CPU
-platform, and analyze the performance of the algorithm on different
-platforms.
+Dijkstra's Shortest Path Algorithm on multi-processing platforms, and analyze
+the performance of the algorithm on different platforms.
 
 # BACKGROUND
 
@@ -116,8 +115,8 @@ want to evaluate final implementations with higher core counts.
 
     1.  Implement the algorithm to run on multi-core CPU platforms.
 
-    2.  Analyze the performance of the sequential version, parallelized
-        GPU version, and multi-core CPU version by comparing speedups,
+    2.  Analyze the performance of the sequential version and the 
+        parallelized versions by comparing speedups,
         identifying bottlenecks, and bench-marking performance
         characteristics of each implementation on different graph types.
 
@@ -173,7 +172,7 @@ Inspired by the feedback on our proposal, we also implemented the Bellman Ford A
 For the dataset, we used the data from Stanford Large Network Dataset Collection \cite{snapnets}. The data set does not contain weight of each edge, hence, we implemented a Java program to randomly generate weight for each edge.
 
 ## GOALS
-So far, we are on track of our proposed schedule. However, our performance analysis show that the amount of speedup from our current approach is limited by the inherent dependencies of the algorithm. According to the feedback of proposal and our current results, we decided to modify our goals to include a new shortest path algorithm, the Bellman Ford Algorithm, in place of the original multi-core cpu implementation of the algorithm because we want to focus more on the GPU acceleration of shortest path algorithms. If time permits, we also want to look into some of the architectures suggested in our mentor's feedback, such as the Swarm Architectures that are useful for parallelizing hard-to-parallelize applications such ah Dijkstra's algorithm.
+So far, we are on track of our proposed schedule. However, our performance analysis show that the amount of speedup from our current approach is limited by the inherent dependencies of the algorithm. According to the feedback of proposal and our current results, we decided to modify our goals to include a new shortest path algorithm, the Bellman Ford Algorithm, in place of the original multi-core cpu implementation of the algorithm because we want to focus more on the analysis of parallelization of different algorithms using different programming models. If time permits, we also want to look into some of the architectures suggested in our mentor's feedback, such as the Swarm Architectures that are useful for parallelizing hard-to-parallelize applications such ah Dijkstra's algorithm.
 
 ## DELIVERABLE
 We plan to use graphs and charts to show our work in the poster session. Specifically, we intend to have an analysis chart to show the computation time and speedup of each parallel algorithm. Then, we can generate a "path graph" since we are working on "path finding" work.
