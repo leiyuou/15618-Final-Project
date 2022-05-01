@@ -4,23 +4,26 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class addWeight {
+    static final int NODE = 70000;
+    static final int MAX = 200;
     static TreeMap<Integer, Map<Integer, Integer>> nodes = new TreeMap<>();
     static int nodeCount = 0;
     static int edgeCount = 0;
     public static void main(String[] args) throws IOException {
-        readFile("/Users/leiyuou/Desktop/15618/fakefile/src/roadNet-PA.txt");
+        readFile("C:/Users/xinqi/Desktop/15618/15618-Final-Project/fakefile/src/roadNet-PA.txt");
         generateRandomWeight();
-        writeToFile("/Users/leiyuou/Desktop/15618/fakefile/src/roadNet-PA-weighted_50000.txt");
+        writeToFile(String.format("C:/Users/xinqi/Desktop/15618/15618-Final-Project/inputs/roadNet-PA-%d.txt", NODE));
     }
 
     public static void readFile(String path) throws IOException {
-        BufferedReader in = new BufferedReader(new FileReader(path));
+        FileReader fr = new FileReader(path);
+        BufferedReader in = new BufferedReader(fr);
         String str;
         while ((str = in.readLine()) != null) {
             String[] tmp = str.split("\t");
             int node1 = Integer.valueOf(tmp[0]);
             int node2 = Integer.valueOf(tmp[1]);
-            if (node1 > 49999 || node2 > 49999) {
+            if (node1 > NODE-1 || node2 > NODE-1 || (Math.abs(node1-node2)<2)) {
                 continue;
             }
             if (!nodes.containsKey(node1)) {
@@ -37,19 +40,29 @@ public class addWeight {
             Map<Integer, Integer> map = entry.getValue();
             for (Map.Entry<Integer, Integer> subEntry : map.entrySet()) {
                 if (subEntry.getValue() == 0) {
-                    int randomWeight = (int)(Math.random() * 1000) + 1;
+                    int randomWeight = (int)(Math.random() * MAX) + 1;
                     subEntry.setValue(randomWeight);
                     nodes.get(subEntry.getKey()).put(entry.getKey(), randomWeight);
                 }
                 edgeCount++;
             }
+            int u = entry.getKey();
+            if(u-1>-1) {
+                map.put(u - 1, (NODE / 2) * MAX);
+                edgeCount++;
+            }
+            if(u+1<NODE) {
+                map.put(u + 1, (NODE / 2) * MAX);
+                edgeCount++;
+            }
         }
-        nodeCount = nodes.size();
-
+        nodeCount = NODE;
     }
 
     public static void writeToFile(String path) throws IOException {
-        BufferedWriter out = new BufferedWriter(new FileWriter(path));
+        File f = new File(path);
+        f.createNewFile();
+        BufferedWriter out = new BufferedWriter(new FileWriter(f));
         out.write(String.format("%d\t%d\n", nodeCount, edgeCount));
         for (Map.Entry<Integer, Map<Integer, Integer>> entry : nodes.entrySet()) {
             Map<Integer, Integer> map = entry.getValue();
