@@ -157,9 +157,9 @@ the algorithm on GHC machines from scratch. Performance analysis will
 most likely be done on both GHC and PSC machines (if available) since we
 want to evaluate final implementations with higher core counts.
 
-# GOALS AND DELIVERABLES
+## GOALS AND DELIVERABLES
 
-## Goals
+### Goals
 
 -   **75%**
 
@@ -196,7 +196,7 @@ want to evaluate final implementations with higher core counts.
         model and message-passing model to see if and how graph types
         and task granularity could affect the overall performance.
 
-## Deliverables
+### Deliverables
 
 For the final presentation of our results, we plan to generate different
 test cases and graph types manually. For example, developing a program
