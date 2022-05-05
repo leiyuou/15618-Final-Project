@@ -199,7 +199,7 @@ void Dijkstra_MPI_core(AdjList *graph, int source, int *dist,
         visited[i] = 0;
     }
     
-    int local_min[2];
+    // int local_min[2];
     
     for (int n = 0; n < n_nodes; n++) {
         int local_min_dist = 1000*n_nodes+1;
@@ -213,10 +213,10 @@ void Dijkstra_MPI_core(AdjList *graph, int source, int *dist,
                 local_min_node = i;
             }
         }
-        local_min[0] = local_min_dist;
-        local_min[1] = local_min_node;
+        global_min[0] = local_min_dist;
+        global_min[1] = local_min_node;
         
-        MPI_Allreduce(local_min, global_min, 1, MPI_2INT, MPI_MINLOC, MPI_COMM_WORLD);
+        MPI_Allreduce(MPI_IN_PLACE, global_min, 1, MPI_2INT, MPI_MINLOC, MPI_COMM_WORLD);
         
         int u = global_min[1];
         visited[u] = 1;

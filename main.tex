@@ -1,0 +1,251 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{pgfplots}
+\pgfplotsset{width=10cm,compat=1.9}
+\usepackage{graphicx} % Allows you to insert figures
+\usepackage{amsmath} % Allows you to do equations
+\usepackage{fancyhdr} % Formats the header
+\usepackage{geometry} % Formats the paper size, orientation, and margins
+\usepackage{setspace}
+\usepackage[english]{babel}
+\usepackage{csquotes}
+\usepackage{algorithm} 
+\usepackage{algpseudocode}
+\usepackage{titlesec}
+\linespread{1.2} % About 1.5 spacing in Word
+\setlength{\parindent}{0pt} % No paragraph indents
+\setlength{\parskip}{1em} % Paragraphs separated by one line
+\renewcommand{\headrulewidth}{0pt} % Removes line in header
+\geometry{legalpaper, portrait, margin=1in}
+\setlength{\headheight}{12pt}
+\titlespacing*{\subsection}{0pt}{0.0\baselineskip}{0.0\baselineskip}
+\usepgfplotslibrary{external}
+\tikzexternalize
+\usepackage{biblatex}
+\addbibresource{ref.bib}
+
+\begin{document}
+\begin{titlepage}
+   \begin{center}
+        \vspace*{5cm}
+
+        \Huge{15-418/618 Project}
+
+        \Huge{Parallel Shortest Path Algorithms}
+            
+        \vspace{0.5 cm}
+        \Large{}{}{Xinqi Wang (Andrew ID xinqiw)}\\
+        \Large{}{}{Yuou Lei (Andrew ID yuoul)}
+       
+        \vspace{1cm}
+    \end{center}
+    
+\end{titlepage}
+
+\setcounter{page}{2}
+\pagestyle{plain}
+\fancyhf{}
+\rhead{\thepage}
+\lhead{Group Name; Title of Document}
+
+\doublespacing
+\section{SUMMARY}
+In this project, we investigated multiple parallelized implementations of two classic algorithms for finding shortest paths to a single source in a give graph: the Dijkstra's Algorithm and the Bellman-Ford Algorithm. We parallelized both algorithms with Message Passing Interface (MPI) and Open Multi-Processing (OpenMP), and analyzed the performance of parallelized models with sequential models on the GHC and PSC machines. Graphs and findings of our evaluation are presented and discussed in the Results section.
+\section{BACKGROUND}
+\subsection{Graphs and the Single Source Shortest Path Problem}
+A graph consists of vertices and edges connecting pairs of vertices. Graphs are applied in many real world applications to represent connections and relationships. For example, in social media networks, in video games, in mapping systems, etc. To model different characteristics of different applications, various types of graphs are introduced. In this project, we consider the weighted and undirected graph type. A weighted graph is a graph where each edge is associated with a weight value that is typically positive. This type of graphs are often seen in optimization problems like path planning applications. We assume all weights are positive in this project. An undirected graph is a graph where all edges are bidirectional. As shown in Figure \ref{fig:wug}, a weighted, undirected graph is a graph where all edges can be numerically ordered an are bidirectional.\\ 
+\begin{figure}[h!]
+\begin{center}
+  \includegraphics[scale=0.5]{graphhh.png}
+  \caption{A weighted, undirected graph \cite{geeksforgeeks}}
+  \label{fig:wug}
+  \end{center}
+\end{figure} 
+\\Graphs are typically represented by either adjacency matrices or adjacency lists ,as shown in Figure \ref{fig:gr}. As can be seen, an adjacency matrix has an $O(1)$ access time complexity and $O(V^2)$ space complexity, whereas adjacency lists have $O(V)$ access time and takes up $O(E)$ space. In this project, depending on the algorithm, different graph representations are implemented to optimize performance resource usage.\\
+\begin{figure}[h!]
+\begin{center}
+  \includegraphics[scale=0.6]{graphMatrixList.png}
+  \caption{Graph Representation \cite{bournetocode}}
+  \label{fig:gr}
+  \end{center}
+\end{figure} 
+\\In this project, we aim to parallelize a well-known graph problem: the Single Source Shortest Path problem. Given a graph $G$ and a source $S$ in the vertex set $V$, the Single Source Shortest Path problem finds the shortest path from each of the vertices in $V$ to $S$. For example, in Figure \ref{fig:wug}, given $S=0$, the shortest paths from vertices \{0,1,2,3,4,5,6,7,8\} are \{0,4,12,19,21,11,9,8,14\}, respectively. 
+
+\subsection{Bellman-Ford Algorithm}
+\begin{figure}[hbt!]
+\begin{center}
+  \includegraphics[scale=0.7]{seconditeration2 (1).png}
+  \caption{Bellman Ford Algorithm \cite{rajboston1951}}
+  \label{fig:bell}
+  \end{center}
+\end{figure}\begin{algorithm}
+	\caption{Bellman Ford(Graph, source)} 
+	\begin{algorithmic}[2]
+		\For {vertex $v$ in $Graph.Vertices$}
+		    \State dist[$v$] ← INFINITY
+		    \State prev[$v$] ← UNDEFINED  
+		\EndFor
+		\State dist[source] ← 0
+		\For {vertex $v$ in $Graph.Vertices$}
+		    \For{edge $e$ in $Graph.Edges$}
+		        \State $alt$ ← dist[$u$] + Graph.Edges($e$)
+		        \If{$alt$ $<$ dist[$v$]}
+                    \State dist[$v$] ← $alt$
+                    \State prev[$v$] ← $u$
+                \EndIf 
+		    \EndFor
+		\EndFor
+	\State return dist[], prev[]
+	\end{algorithmic} 
+\end{algorithm}
+The Bellman Ford Algorithm, shown in Figure \ref{fig:bell}, is a popular single source shortest path finding algorithm that estimates the shortest paths from all other nodes to the source node by iterating through all edges in the graph. By iteratively walking through paths of one edges, two edges, and so on, Bellman Ford algorithm guarantees the optimal results after $V-1$ iterations.
+
+\subsection{Dijkstra's Algorithm}
+\begin{figure}[hbt!]
+\begin{center}
+  \includegraphics[scale=0.3]{Dijkstras-algorithm.jpg}
+  \caption{Dijkstra's Algorithm \cite{stechies}}
+  \label{fig:dij}
+  \end{center}
+\end{figure}
+The Dijkstra's algorithm is a greedy algorithm for finding the shortest paths from a source node to all other nodes in a given graph, as illustrated in Figure \ref{fig:dij}. One inherent dependency in Dijkstra's Algorithm is the fact that each update to the shortest paths from each vertices to the source node must be made based on the addition/introduction of the node from previous iteration. Given the fact that Dijkstra's Algorithm is a greedy algorithm, the $while$ loop must be executed sequentially to find the optimal solution and is a potential bottleneck.
+\begin{algorithm}
+	\caption{Dijkstra(Graph, source)} 
+	\begin{algorithmic}[1]
+		\For {vertex $v$ in $Graph.Vertices$}
+		    \State dist[$v$] ← INFINITY
+		    \State prev[$v$] ← UNDEFINED  
+		    \State add $v$ to Q
+		\EndFor
+		\State dist[source] ← 0
+		\While{Q is not empty}
+		    \State $u$ ← vertex in Q with min dist[$u$]
+		    \State remove $u$ from Q
+		    \For{neighbor $v$ of $u$ still in Q}
+		        \State $alt$ ← dist[$u$] + Graph.Edges($u$, $v$)
+		        \If{$alt$ $<$ dist[$v$]}
+                    \State dist[$v$] ← $alt$
+                    \State prev[$v$] ← $u$
+                \EndIf 
+		    \EndFor
+		\EndWhile
+	\State return dist[], prev[]
+	\end{algorithmic} 
+\end{algorithm}
+
+\newpage
+\section{APPROACH}
+Since both of the targeted shortest path finding algorithms optimize solutions over multiple iterations and a significant portion of the computation involves conditional operations and thus would cause constant divergence, we suspected that a CUDA parallelized version running on GPU will unlikely to utilize the available computing power to full extent to yield significant speedup. Since there is inherent dependence on results from a prior iteration, data communication between processors is inevitable and synchronization must be done to arrive at a correct optimal solution. Thus, we decided to focus our tasks and analysis on the parallelization of these two algorithms with two different parallel programming models, the shared-address space model and the message-passing model, on different data scales. To do this, we implemented the parallellized Dijkstra's and Bellman-Ford algorithms using both OpenMP and MPI and compare their performance against single threaded serial implementations on both GHC and PSC machines.
+
+\subsection{Sequential Dijkstra's Algorithm}
+We initially implemented the serial Dijkstra's algorithm with a graph represented as an adjacency matrix. However, our first attempts with graphs represented as adjacency matrices caused processes to be killed due to not enough memory with large graph sizes. Considering that it is rare that an adjacency matrix is full, meaning all nodes are connected to all or most of other nodes, we decided to modify our data structure and use adjacency lists to represent graphs more compactly. For both serial and parallelized Dijkstra's algorithms, the input graph includes all adjacency lists and corresponding weights for each adjacent pair of nodes.
+
+\subsection{Parallel Dijkstra with OpenMP}
+As mentioned in previous sections, the inherent dependence in Dijkstra's Algorithm makes it difficult to parallelize the outer loop since that would yield incorrect shortest paths. Therefore, our first attempt divides all independent work evenly among available thread workers. These tasks include initializing distance and parent node arrays, finding the node currently with the minimum distance to the source node, and finally iterating the neighbors of this node to update their shortest paths.\\
+% To further optimize our first approach, we took advantage of the fact that in this case we consider a shared-address space model. By maintaining a shared priority queue of un-visited nodes and their distances to the source node, the time it takes to find the node with minimum distance can be reduced to $O(log(V))$. During each iteration, one worker thread retrieves the current queue head and all threads cooperatively walk through all of its neighbors to update their distances to the source node.
+
+\subsection{Parallel Dijkstra with MPI}
+We also parallelized Dijkstra's Algorithm using MPI for a message-passing model. The core idea of parallelism using MPI is similar to OpemMP. We evenly separate the work of computing the shortest path of each iteration to each process. The process will handle part of the nodes, and after each process finishes its work, our algorithm will use Allreduce API call to collect all the 'next node' candidates of each process, retrieves the node with shortest distance to the source node among the candidates and broadcasts this node to all other threads. Then, all threads proceed to update its portion of nodes that are connected to the selected node and update their distance to the source accordingly. Finally, when the algorithm successfully get all paths of the nodes, we will combine the previous metrics of each process to get a global previous metric. In this case, we can always find the global shortest next node, which make the parallelism can get the same result as sequential version. \\
+One pitfall of the MPI version is that because this is a message-passing model, all cooperation are synchronized using messages. This makes workload balancing harder than in the OpenMP case where we assume a shared memory among processes, since our graph is represented as adjacency lists. When we statically assign each worker a specific range of nodes to update, some threads might make more updates in an iteration if it's responsible for more neighbors nodes of the selected node. Unlike in the OpenMP version, where the neighbor nodes are assigned evenly to all available nodes to update, dynamically assigning neighbor nodes will require frequent massage communication to all threads and likely generate more overheads.
+
+\subsection{Sequential Bellman Ford's Algorithm}
+We implemented the serial Bellman Ford algorithm with a pre-defined data structure consisting of the edges in the graph and the weights of each edge. Because Bellman Ford iterates through all edges, this data representation enables more efficient data manipulation and computation. Whereas Dijkstra's Algorithm has $O((|E|+|V|)log|V|)$ time complexity with a priority queue, Bellman-Ford algorithm has $O(|V||E|)$ complexity and thus is expected to have a less optimal performance. Still, because each iteration of the outer loop "relaxes" all edges once and since this task can be done independently for each edge, there is potential parallelism for optimizing the algorithm.
+
+\subsection{Parallel Bellman-Ford with OpenMP}
+The OpenMP parallelized Bellman Ford executes the inner for loop of the algorithm in parallel. During each iteration of the outer loop, all edges are assigned evenly to available threads to process and update the corresponding nodes if needed. Notice that while Dijkstra's Algorithm is parallelized by assigning nodes to different workers, Bellman Ford Algorithm is parallelized by assigning all edges to different workers.
+
+\subsection{Parallel Bellman-Ford with MPI}
+The MPI parallelized Bellman Ford is more complicated than the OpenMP implementation, since there is no shared address space. By dividing up the edges to be iterated through among the thread workers, each worker updates its local copy of the distance array and parent array. One problem here is although it's easy to reduce all distance arrays to a global one using an Allreduce() operation in minimum mode at the end of each iteration, the parent arrays can not be easily reduced to the correct one using this operation. Each element in the correct parent array has to come from the process that has the minimum distance element for the corresponding node. To work around this, we defined a data structure that stores the distance and the parent, and a compare function that compares two elements of this data structure based on the distance value. We then deploy the Allreduce() call on our customized data structure with our customized compare function. This will reduce all local arrays of distance-parent pairs into a global one that stores the minimum distance and the corresponding parent node for each node. Still, one concern for this method is the possible overhead generated because our data structure and function are not as optimized as the API defined ones are to achieve the best performance.
+
+\subsection{Bellman Ford Algorithm with Early Termination}
+One optimization technique we deployed in our implementations is an early stopping criteria. Because the Bellman Ford algorithm updates shortest distances by repeatedly iterating over all edges multiple times, if the distance array is not updated during an iteration, then we can confirm that the current distance array is the shortest distance array. Therefore, we introduce a done flag to indicate whether any updates were made by this thread during this iteration. At the end of each iteration, if all done flags are still true, meaning no updates were made, the algorithm terminates early.
+
+\newpage
+\section{RESULTS}
+\subsection{Evaluation}
+We evaluate our sequential and parallelized shortest paths algorithms on the dataset provided in \cite{snapnets}. Since there were no weighted graphs, we generate our own test data by extracting from the PA road network graph and randomly generating weights for each edge. We also made sure the extracted graph is connected by adding edges between nodes with adjacent labels. This will make sure the computations performed grows consistently with the number of nodes in each test graph.\\
+We measure the compute time for each implementation on graphs of size 100, 1000, 10000, 30000, 50000, and 70000 nodes and record the total compute time in seconds in Figure \ref{fig:all}. Since displaying all experimental results will take significantly more space, for parallelized versions, we only display here the execution times of thread counts that show improvement in performance from the previous thread counts. Later when discussing overall trends and specific cases, we will use graphs for better visualization.
+\begin{figure}[hbt!]
+\begin{center}
+  \includegraphics[scale=0.53]{table.jpg}
+  \caption{Computation Time for all algorithms on all input graphs (in seconds)}
+  \label{fig:all}
+  \end{center}
+\end{figure} 
+% Add table of run times of all versions (best performance)
+
+\subsection{Problem Size}
+Since we are targeting graph algorithms, the size of the problem(graph) can play significant roles in computation time. For each input graph size, we plot the speedup of each parallelized implementation against the corresponding baseline model in Figure \ref{fig:size}. As expected, as the problem size grows, most of the parallelized implementations' performance also improve. More specifically, our parallelized implementations with 8 threads show positive speedup for input size of greater than 1000 nodes. This is because with smaller work loads, the benefit of parallelism is amortized by the cost of synchronization and initialization overhead.
+\begin{figure}[h!]
+\begin{center}
+  \includegraphics[scale=0.8]{Problem Size.jpeg}
+  \caption{Speedup vs. Problem Size}
+  \label{fig:size}
+  \end{center}
+\end{figure}
+\subsection{Parallel Programming Models and Algorithms}
+\subsubsection{OpenMP Dijkstra vs. Bellman Ford}
+% OpenMP Dijkstra vs. Bellman Ford speedup at 70000
+The relative speedups for each algorithm vs. thread counts are shown in Figure \ref{fig:openmp}. Under a shared-address space model implemented using OpenMP, the Bellman Ford algorithm showed better speedup from the baseline Bellman Ford model than Dijkstra's Algorithm. This is because our Dijkstra's OpenMP implementation required more synchronization to ensure the threads working together arrive at a correct solution when they work in a shared address. For example, at the beginning of each iteration, all threads must finish computing their local minimum-distance node before one of them proceeds to find the global minimum-distance node. Only after the global minimum has been computed will all worker threads proceed to updating neighbors. All threads must be synchronized with a barrier at the end of each iteration before any one can continue to the next round to find local minimum again with the updated shared distance array. 
+\\Dijkstra's OpenMP implementation also reaches peak speedup earlier at n=8. Because the work load distribution depends largely on the number of neighbors for the selected node, it is likely that for not strongly connected graphs where each node has only a few neighbors, Dijkstra's Algorithm with too much threads generate more overhead than the benefit in performance.
+\begin{figure}[hbt!]
+\begin{center}
+  \includegraphics[scale=0.8]{OpenMP comp.jpeg}
+  \caption{Speedup vs. Processor Count (OpenMP)}
+  \label{fig:openmp}
+  \end{center}
+\end{figure}
+
+% MPI Dijkstra vs. Bellman Ford speedup at 70000
+\begin{figure}[hbt!]
+\begin{center}
+  \includegraphics[scale=0.8]{MPI Comp.jpeg}
+  \caption{Speedup vs. Processor Count (MPI)}
+  \label{fig:mpi}
+  \end{center}
+\end{figure}
+\subsubsection{MPI Dijkstra vs. Bellman Ford}
+With the message-passing model MPI, Dijkstra's algorithm shows significantly better performance speedup than Bellman Ford's Algorithm. We suspected that this gap was results from the MPI Allreduce() calls made by the two implementation. After profiling our code, we confirmed that this was indeed a source of difference in compute time. The Bellman Ford MPI implementation, because the Allreduce() call uses a non-optimized, customized function to transfer $V$ distance-parent pairs in the local array, it takes more time to complete. Meanwhile, our MPI Dijkstra's algorithm calls Allreduce() on only one integers pair(distance-node) for each process per iteration. Therefore, our MPI Bellman Ford implementation is bottle-necked by the fact that the local distance and parent pairs must be communicated and combined to find the correct values at the end of each iteration. Specifically, our profiling shows that the Allreduce() calls are responsibled for approximately 90\% of the total compute time.
+
+\subsection{Bellman Ford Early Termination}
+% Bellman Ford Early Stopping
+Lastly, we also compare the speedups of Bellman Ford algorithms with and without early termination. We did not include the Bellman Ford algorithm with early termination in previous analyses because the performance of this optimized algorithm can fluctuate depending how densely connected the graph is and is thus not an appropriate choice for bench-marking and comparing with other algorithms. Still, with our sparsely connected input graphs, it can be seen below that Bellman Ford algorithm with early termination outperforms the one without early termination even in the sequential case.
+
+\begin{figure}[h!]
+\begin{center}
+  \includegraphics[scale=0.7]{early.jpg}
+  \caption{Bellman Ford Algorithm Speedup with and without Early Termination}
+  \label{fig:wug}
+  \end{center}
+\end{figure} 
+
+\newpage
+\section{REFERENCES}
+\printbibliography
+\newpage
+\section{WORK DISTRIBUTION}
+\textbf{Xinqi Wang (50\%)}
+\begin{enumerate}
+    \item Sequential Dijkstra's and Bellman Ford algorithms
+    \item OpenMP parallelized Dijkstra with priority queue
+    \item OpenMP parallelized Bellman Ford
+    \item MPI parallelized Bellman Ford
+    \item Initial functional analysis on GHC
+    \item Final report
+    \item Final Video Recording
+\end{enumerate}
+
+\textbf{Yuou Lei (50\%)}
+\begin{enumerate}
+    \item Evaluation dataset generator
+    \item OpenMP Dijkstra without priority queue
+    \item MPI parallelized Dijkstra
+    \item Final performance analysis on PSC
+    \item Final report
+    \item Presentation Slides
+    \item Final Video Recording
+\end{enumerate}
+\section{RECORD}
+Link: https://github.com/leiyuou/15618-Final-Project/blob/main/Presentation\%26Record/Record\_Xinqi\%20Wang\_Yuou\%20Lei.mp4
+YouTube: https://youtu.be/0hVEq8wKZAI
+\end{document}
